@@ -11,8 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 TOKEN = "8613837654:AAFJr98E2tvhy0EnEikXdGmxgGtuvh4tym4"
-ADMIN_IDS = [777574845, 1288069093, 555444333]
-ADMIN_ID = 777574845  # O'zingizning Telegram raqamli ID'ingiz
+ADMIN_IDS = [777574845, 1288069093]
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -61,7 +60,7 @@ async def save_meme_with_name(message: Message, state: FSMContext):
     await message.reply(f"✅ Meme saqlandi: <b>{meme_title}</b>", parse_mode="HTML")
 
 # --- 2. OVOZLAR RO'YXATINI KO'RISH (/list) ---
-@dp.message(F.from_user.id == ADMIN_ID, Command("list"))
+@dp.message(F.from_user.id.in_(ADMIN_IDS), Command("list"))
 async def list_memes(message: Message):
     async with aiosqlite.connect("memes.db") as db:
         cursor = await db.execute("SELECT id, title FROM memes ORDER BY id DESC")
@@ -133,7 +132,7 @@ async def edit_name_start(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 # Yangi nomni qabul qilib bazaga yangilash
-@dp.message(F.from_user.id == ADMIN_ID, MemeState.waiting_for_new_name, F.text)
+@dp.message(F.from_user.id.in_(ADMIN_IDS), MemeState.waiting_for_new_name, F.text)
 async def update_meme_name(message: Message, state: FSMContext):
     new_title = message.text.strip()
     data = await state.get_data()
@@ -146,7 +145,7 @@ async def update_meme_name(message: Message, state: FSMContext):
     await state.clear()
     await message.reply(f"✅ Nomi o'zgartirildi: <b>{new_title}</b>", parse_mode="HTML")
 
-# --- 4. INLINE QIDIRUV (Alifbo bo'yicha tartiblangan) ---
+# --- 4. INLINE QIDIRUV ---
 @dp.inline_query()
 async def inline_search(query: InlineQuery):
     text = query.query.strip().lower()
@@ -156,7 +155,6 @@ async def inline_search(query: InlineQuery):
         if text:
             cursor = await db.execute("SELECT id, title, file_id, file_type FROM memes WHERE LOWER(title) LIKE ? ORDER BY title ASC LIMIT 30", (f"%{text}%",))
         else:
-            # Matn yozilmaganda eng oxirgi qo'shilganlar chiqadi
             cursor = await db.execute("SELECT id, title, file_id, file_type FROM memes ORDER BY id DESC LIMIT 30")
         rows = await cursor.fetchall()
 
