@@ -11,6 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 TOKEN = "8613837654:AAFJr98E2tvhy0EnEikXdGmxgGtuvh4tym4"
+ADMIN_IDS = [777574845, 1288069093, 555444333]
 ADMIN_ID = 777574845  # O'zingizning Telegram raqamli ID'ingiz
 
 bot = Bot(token=TOKEN)
@@ -34,19 +35,19 @@ async def init_db():
         await db.commit()
 
 # --- 1. YANGI MEME QO'SHISH ---
-@dp.message(F.from_user.id == ADMIN_ID, F.voice)
+@dp.message(F.from_user.id.in_(ADMIN_IDS), F.voice)
 async def handle_voice(message: Message, state: FSMContext):
     await state.update_data(file_id=message.voice.file_id, file_type="voice")
     await state.set_state(MemeState.waiting_for_name)
     await message.reply("🎤 Voice qabul qilindi!\nNomini yozib yuboring:")
 
-@dp.message(F.from_user.id == ADMIN_ID, F.audio)
+@dp.message(F.from_user.id.in_(ADMIN_IDS), F.audio)
 async def handle_audio(message: Message, state: FSMContext):
     await state.update_data(file_id=message.audio.file_id, file_type="audio")
     await state.set_state(MemeState.waiting_for_name)
     await message.reply("🎵 Audio qabul qilindi!\nNomini yozib yuboring:")
 
-@dp.message(F.from_user.id == ADMIN_ID, MemeState.waiting_for_name, F.text)
+@dp.message(F.from_user.id.in_(ADMIN_IDS), MemeState.waiting_for_name, F.text)
 async def save_meme_with_name(message: Message, state: FSMContext):
     meme_title = message.text.strip()
     data = await state.get_data()
