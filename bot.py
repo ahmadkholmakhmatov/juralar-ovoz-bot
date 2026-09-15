@@ -183,3 +183,20 @@ async def start_cmd(message: Message):
         "💬 Guruh va chatlarda ishlatish uchun: <code>@juralarovozbot nom</code> deb yozing!",
         parse_mode="HTML"
     )
+
+    # --- 5. STATISTIKA BUYRUG'I (/stats) ---
+@dp.message(F.from_user.id.in_(ADMIN_IDS), Command("stats"))
+async def show_stats(message: Message):
+    async with aiosqlite.connect("memes.db") as db:
+        cursor = await db.execute("SELECT COUNT(*), file_type FROM memes GROUP BY file_type")
+        rows = await cursor.fetchall()
+        
+        cursor_total = await db.execute("SELECT COUNT(*) FROM memes")
+        total = (await cursor_total.fetchone())[0]
+
+    stats_text = f"📊 <b>Bot statistikasi:</b>\n\nJami memelar: <b>{total} ta</b>\n"
+    for count, f_type in rows:
+        icon = "🎤 Voice" if f_type == "voice" else "🎵 Audio"
+        stats_text += f"{icon}: <b>{count} ta</b>\n"
+
+    await message.reply(stats_text, parse_mode="HTML")
