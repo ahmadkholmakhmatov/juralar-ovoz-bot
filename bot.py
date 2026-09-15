@@ -173,3 +173,13 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+@dp.message(Command("start"))
+async def start_cmd(message: Message):
+    await message.reply(
+        "👋 Salom!\n\n"
+        "🎤 Menga audio yoki ovozli xabar (voice) yuboring — men uni meme sifatida saqlab olaman.\n"
+        "📂 Saqlangan memelarni ko'rish va boshqarish uchun: /list\n"
+        "💬 Guruh va chatlarda ishlatish uchun: <code>@juralarovozbot nom</code> deb yozing!",
+        parse_mode="HTML"
+    )
